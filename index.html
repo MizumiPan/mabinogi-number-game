@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>瑪奇猜數字小遊戲</title>
+    <style>
+        body {
+            font-family: "Microsoft YaHei UI", sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            width: 400px;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        h1 {
+            font-size: 24px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .suggestion {
+            font-size: 20px;
+            color: red;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .input-group {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 20px 0;
+            gap: 10px;
+        }
+        input {
+            width: 80px;
+            height: 40px;
+            font-size: 20px;
+            text-align: center;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .hint {
+            font-size: 14px;
+            color: #666;
+            text-align: center;
+            margin: 10px 0;
+        }
+        .button-group {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .result {
+            font-size: 16px;
+            text-align: center;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>瑪奇猜數字小遊戲</h1>
+        <div class="suggestion" id="suggestion">建議猜測數字: 147</div>
+        <div class="input-group">
+            <label style="font-size: 20px;">輸入驗證結果:</label>
+            <input type="text" id="result" maxlength="3" onkeypress="handleKeyPress(event)">
+        </div>
+        <div class="hint">請輸入遊戲中驗證的數字</div>
+        <div class="button-group">
+            <button onclick="resetGame()">重新開始</button>
+            <button onclick="processResult()">確認</button>
+        </div>
+        <div class="result" id="possibilities"></div>
+    </div>
+
+    <script>
+        let hints = [];
+        let suggestedGuess = 147;
+
+        function validateHints(number, hints) {
+            let numberStr = String(number).padStart(3, '0');
+            if (numberStr.includes('0') || new Set(numberStr).size !== 3) return false;
+            
+            for (let hint of hints) {
+                let guess = String(hint.guess);
+                let a = 0, b = 0, c = 0;
+                for (let i = 0; i < 3; i++) {
+                    if (guess[i] === numberStr[i]) a++;
+                    else if (numberStr.includes(guess[i])) b++;
+                    else c++;
+                }
+                if (`${a}${b}${c}` !== hint.result) return false;
+            }
+            return true;
+        }
+
+        function findPossibleNumbers(hints) {
+            let possible = [];
+            for (let num = 111; num < 1000; num++) {
+                if (validateHints(num, hints)) possible.push(num);
+            }
+            return possible;
+        }
+
+        function processResult() {
+            let result = document.getElementById('result').value;
+            if (!result) return;
+            
+            hints.push({guess: suggestedGuess, result: result});
+            let possibleNumbers = findPossibleNumbers(hints);
+            
+            if (possibleNumbers.length > 0) {
+                suggestedGuess = possibleNumbers[0];
+                document.getElementById('suggestion').innerText = `建議猜測數字: ${suggestedGuess}`;
+                document.getElementById('possibilities').innerText = `剩餘${possibleNumbers.length}種可能`;
+            } else {
+                document.getElementById('possibilities').innerText = '沒有符合條件的答案';
+            }
+            
+            document.getElementById('result').value = '';
+        }
+
+        function resetGame() {
+            hints = [];
+            suggestedGuess = 147;
+            document.getElementById('suggestion').innerText = `建議猜測數字: ${suggestedGuess}`;
+            document.getElementById('possibilities').innerText = '';
+            document.getElementById('result').value = '';
+        }
+
+        function handleKeyPress(event) {
+            if (event.keyCode === 13) {
+                processResult();
+            }
+        }
+    </script>
+</body>
+</html>
